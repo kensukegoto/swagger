@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+    SwaggerSample
+
+    Sample SAM Template for SwaggerSample
+
+Globals:
+    Function:
+        Timeout: 3
+
+Resources:
+    PythonVersionApi:
+        Type: AWS::Serverless::Api
+        Properties:
+            StageName: Prod
+            DefinitionBody:
+                Fn::Transform:
+                    Name: AWS::Include
+                    Parameters:
+                        Location: s3://kensukegoto-hello-swagger/swagger.yaml
+
+    PythonVersionFunction:
+        Type: AWS::Serverless::Function
+        Properties:
+            CodeUri: hello_world/
+            Handler: app.lambda_handler
+            Runtime: python3.6
+            Events:
+                HelloWorld:
+                    Type: Api
+                    Properties:
+                        Path: /version
+                        Method: get
+                        RestApiId: !Ref PythonVersionApi
+
+Outputs:
+  PythonVersionApiUrl:
+      Description: "API Gateway endpoint URL for Prod stage for Python Version Function"
+      Value: !Sub "https://${PythonVersionApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/version"
